@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    android:orientation="horizontal">
+	<TextView 
+	    android:text="@string/title_activity_wifi_test"
+        android:layout_width="0dp" 
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#FFFFFF"
+        android:textSize="20dp"
+     	/>
+     <Button 
+         android:id="@+id/selectbtn"
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content"
+         android:text="选择测试Wifi"
+         />
+</LinearLayout>

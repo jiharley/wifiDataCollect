@@ -1,0 +1,15 @@
+<resources>
+
+    <string name="app_name">WiFiData</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_wifi_test">WifiTest</string>
+    <string name="frequency">频率:</string>
+    <string name="Hz_unit">MHz</string>
+    <string name="level">强度:</string>
+    <string name="dbm_unit">dBm</string>
+	<string name="wifi_data">Wi-Fi Data</string>
+    <string name="back">back</string>
+    <string name="clean">clean</string>
+    
+</resources>
