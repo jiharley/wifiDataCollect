@@ -9,13 +9,14 @@
 	    android:layout_height="wrap_content"
 	    android:text="备注："
 	    android:textSize="16dp" />
-	<EditText 
-	    android:id="@+id/dataComment" 
-	    android:layout_height="wrap_content" 
-		android:layout_width="wrap_content" 
-		android:minWidth="200dip"
-		android:inputType="text"/>
-
+
+	<EditText
+	    android:id="@+id/dataComment"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:ems="10" >
+	    <requestFocus />
+	</EditText>
 	<LinearLayout
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
@@ -25,13 +26,13 @@
             android:id="@+id/commentConfirm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="确定" />
+            android:text="  确 定    " />
         <Button
             android:id="@+id/commentCancle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="50dp"
-            android:text="取消" />
+            android:text="  取 消    " />
 
 	</LinearLayout>
   

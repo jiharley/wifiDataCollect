@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.R.bool;
 import android.R.integer;
@@ -15,13 +17,15 @@ import android.os.Handler;
 import android.util.Log;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteDatabase;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,6 +40,7 @@ import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 
 public class WifiTest extends Activity {
+	//Variables for database
 	private SQLiteDatabase mydb=null;
 	private final static String DATABASE_NAME = "MyDB.db";
 	private final static String TABLE_NAME = "wifi_test";
@@ -47,16 +52,20 @@ public class WifiTest extends Activity {
 	
 	private static Boolean isRecordData = false;
 	private int counter = 0;
+	private static int recordTimesAtEachPoint = 20;
     private ListView listView;
 	private WifiManager wifiManager;
 	private WifiReceiver wifiReceiver;
 	private Button saveButton;
 	private Button seeButton;
 	private Button selectButton;
-	private String[] testWifi = {"AP1","AP2","AP3","AP4","AP5","AP6","AP7","AP8",};
-	private String comment = "1";
+	private String[] testWifi = {"AP1","AP2","AP3","AP4","AP5","AP6","AP7","AP8"};
+	private String comment = "0";
 	private List<ScanResult> scanWifiList;
 	private List<Map<String, Object>> showWifiList;
+	
+//	private Timer myTimer = null;
+//    private TimerTask myTimerTask = null;
 	final Handler scanHandler = new Handler();
 	
     public void onCreate(Bundle savedInstanceState) {
@@ -85,6 +94,7 @@ public class WifiTest extends Activity {
         
         wifiReceiver = new WifiReceiver();
         registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+//        startTimer();
 //        wifiManager.startScan();
         scanHandler.post(scanRunnable);
     }
@@ -94,7 +104,9 @@ public class WifiTest extends Activity {
 			// TODO Auto-generated method stub
 			Intent intent = new Intent();
 			intent.setClass(WifiTest.this, CommentDialog.class);
-			intent.putExtra("comment", comment);
+			int i = Integer.parseInt(comment);
+			i++;
+			intent.putExtra("comment", String.valueOf(i));
 			startActivityForResult(intent, 1);
 		}
 	}; 
@@ -135,13 +147,41 @@ public class WifiTest extends Activity {
 	Runnable scanRunnable = new Runnable() {
 		public void run() {
 			// TODO Auto-generated method stub
+//			Log.i("scanRunnable", "startScan");
 			wifiManager.startScan();
-			scanHandler.postDelayed(this, 500);
+			//scanHandler.postDelayed(this, 500);
 		}
 	};
+	
+//	public void startTimer() {
+//		if (myTimer == null) {
+//			myTimerTask = new TimerTask() {
+//				
+//				@Override
+//				public void run() {
+//					// TODO Auto-generated method stub
+//					wifiManager.startScan();
+//					Log.i("startTimer", "startScan");
+//				}
+//			};
+//			myTimer = new Timer();
+//			myTimer.schedule(myTimerTask, 0, 500);
+//			
+//		}
+//	}
+//	
+//	public void closeTimer() {
+//		if (myTimer != null) {
+//			myTimer.cancel();
+//			myTimer = null;
+//		}
+//		if (myTimerTask != null) {
+//			myTimerTask = null;
+//		}
+//	}
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0,0,0,"Refresh");
+        menu.add(0, 0, 0,"Refresh");
         menu.add(0, 1, 0, "stop");
         return true;
     } 
@@ -149,31 +189,37 @@ public class WifiTest extends Activity {
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
     	switch (item.getItemId()) {
 		case 0:
+//			startTimer();
 			scanHandler.post(scanRunnable);
 			break;
 		case 1:
+//			closeTimer();
 			scanHandler.removeCallbacks(scanRunnable);
 		default:
 			break;
 		}
-    	//wifiManager.startScan();
     	return super.onMenuItemSelected(featureId, item); 
     }
     
     protected void onPause() {
     	unregisterReceiver(wifiReceiver);
     	scanHandler.removeCallbacks(scanRunnable);
+//    	closeTimer();
     	super.onPause();
     }
     
     protected void onResume() {
     	registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)); 
     	scanHandler.post(scanRunnable);
+//    	startTimer();
     	super.onResume();
     }
     
     class WifiReceiver extends BroadcastReceiver {
     	public void onReceive(Context c, Intent intent){
+    		//Once scan result is available, start another scan
+    		scanHandler.post(scanRunnable);
+    		
     		listView = (ListView) findViewById(R.id.wifiListView);
     		SimpleAdapter adapter = new SimpleAdapter(c, getData(testWifi), R.layout.wlist, new String[]{"SSID","BSSID","wifiFrequency","wifiLevel"}, new int[]{R.id.SSID,R.id.BSSID,R.id.wifiFrequency,R.id.wifiLevel});
     		listView.setAdapter(adapter);
@@ -190,10 +236,20 @@ public class WifiTest extends Activity {
     			mydb.close();
     			counter++;
 //    			Toast.makeText(getApplicationContext(), "正在保存第"+counter+"个数据", Toast.LENGTH_SHORT).show();
-    			if (counter >= 20) {
+    			if (counter >= recordTimesAtEachPoint) {
 					counter = 0;
 					isRecordData = false;
-					Toast.makeText(getApplicationContext(), "保存完成", Toast.LENGTH_SHORT).show();
+//					Toast.makeText(getApplicationContext(), "保存完成", Toast.LENGTH_SHORT).show();
+					AlertDialog.Builder builder = new Builder(WifiTest.this);
+					builder.setMessage("保存完成");
+					builder.setTitle("提示");
+					builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							// TODO Auto-generated method stub
+							dialog.dismiss();
+						}
+					});
+					builder.create().show();
 				}
 			}
     	}
